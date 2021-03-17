@@ -1,17 +1,30 @@
 import {ITodo, TODO_STATUS} from "@/typings";
-import {SET_TODO, SET_TODO_LIST} from "@/store/actionType";
+import {SET_TODO, SET_TODO_LIST,REMOVE_TODO,SET_STATUS,SET_DOING} from "@/store/actionType";
 import {Store, useStore} from "vuex";
+import {watch} from 'vue'
+
 
 export interface IUseTodo {
     setTodo: (value: string) => void;
     setTodoList: () => void;
-    removeTodo: () => void;
-    setStatus: () => void;
-    setDoing: () => void;
+    removeTodo: (id: number) => void;
+    setStatus: (id: number) => void;
+    setDoing: (id: number) => void;
 }
 function useTodo():IUseTodo {
     const store: Store<any> = useStore()
     const { setLocalList, getLocalList }: IUserLocalStorage = useLocalStorage()
+    const todoList:ITodo[] = getLocalList()
+
+    /*
+    * 监听每次list的变化，每次变化的时候重新存储到本地storage中
+    * watch有两个回调函数，第一个返回要监听的数据，第二个处理相关的逻辑
+    * */
+    watch(() => {
+        return store.state.list;
+    }, (todoList) => {
+        setLocalList(todoList)
+    })
 
     function setTodo(value: string): void {
         const todo: ITodo = {
@@ -24,19 +37,20 @@ function useTodo():IUseTodo {
         setLocalList(store.state.list)
     }
 
-    const todoList:ITodo[] = getLocalList()
     function setTodoList() {
         store.dispatch(SET_TODO_LIST, todoList)
-        console.log(todoList);
     }
-    function removeTodo() {
-
+    function removeTodo(id:number) {
+        store.dispatch(REMOVE_TODO,id)
+        // setLocalList(store.state.list)
     }
-    function setStatus() {
-
+    function setStatus(id:number) {
+        store.dispatch(SET_STATUS,id)
+        // setLocalList(store.state.list)
     }
-    function setDoing() {
-
+    function setDoing(id:number) {
+        store.dispatch(SET_DOING,id)
+        // setLocalList(store.state.list)
     }
 
     return {
